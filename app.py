@@ -6,7 +6,18 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
-
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": [
+                "http://localhost:8765"
+            ]
+        }
+    },
+    methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"]
+)
 GOOGLE_API_KEY = os.environ.get("GOOGLE_SAFE_BROWSING_API_KEY", "")
 
 GOOGLE_SAFE_BROWSING_URL = (
