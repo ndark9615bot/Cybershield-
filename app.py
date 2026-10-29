@@ -1,27 +1,14 @@
 import os
 import ipaddress
 import requests
-
 from urllib.parse import urlparse
 from flask import Flask, jsonify, request
-from flask_cors import CORS
 
 app = Flask(__name__)
 
-CORS(
-    app,
-    resources={
-        r"/scan": {
-            "origins": [
-                "https://ndark9615bot.github.io"
-            ]
-        }
-    }
-),
-    methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type"]
+GOOGLE_API_KEY = os.environ.get(
+    "GOOGLE_SAFE_BROWSING_API_KEY", ""
 )
-GOOGLE_API_KEY = os.environ.get("GOOGLE_SAFE_BROWSING_API_KEY", "")
 
 GOOGLE_SAFE_BROWSING_URL = (
     "https://safebrowsing.googleapis.com/v4/threatMatches:find"
@@ -45,12 +32,13 @@ def health():
 
 
 def validate_url(value):
-    """Accept only valid HTTP or HTTPS URLs."""
     if not isinstance(value, str) or not value.strip():
         return None
 
+    value = value.strip()
+
     try:
-        parsed = urlparse(value.strip())
+        parsed = urlparse(value)
 
         if parsed.scheme not in ("http", "https"):
             return None
@@ -61,24 +49,35 @@ def validate_url(value):
         if parsed.username or parsed.password:
             return None
 
-        # Validate IP addresses when the hostname is an IP.
         try:
             ipaddress.ip_address(parsed.hostname)
         except ValueError:
             if "." not in parsed.hostname:
                 return None
 
-        return value.strip()
+        return value
 
     except (ValueError, TypeError):
         return None
 
 
-@app.route("/scan", methods=["POST"])
+@app.route("/scan", methods=["POST", "OPTIONS"])
 def scan_url():
+    if request.method == "OPTIONS":
+        response = app.make_response(("", 204))
+        response.headers["Access-Control-Allow-Origin"] = (
+            "https://ndark9615bot.github.io"
+        )
+        response.headers["Access-Control-Allow-Methods"] = (
+            "POST, OPTIONS"
+        )
+        response.headers["Access-Control-Allow-Headers"] = (
+            "Content-Type"
+        )
+        return response
+
     data = request.get_json(silent=True) or {}
-    submitted_url = data.get("url")
-    url = validate_url(submitted_url)
+    url = validate_url(data.get("url"))
 
     if not url:
         return jsonify({
@@ -116,51 +115,46 @@ def scan_url():
             timeout=REQUEST_TIMEOUT
         )
 
-        if response.status_code == 200:
-            result = response.json()
-            threats = result.get("matches", [])
-
-            if threats:
-                return jsonify({
-                    "url": url,
-                    "status": "unsafe",
-                    "message": "A potential threat was detected.",
-                    "threats": [
-                        {
-                            "type": threat.get("threatType", "UNKNOWN"),
-                            "platform": threat.get(
-                                "platformType", "UNKNOWN"
-                            )
-                        }
-                        for threat in threats
-                    ]
-                })
-
-            return jsonify({
-                "url": url,
-                "status": "no_known_threat_found",
-                "message": (
-                    "No known threat was found in the Safe Browsing "
-                    "check. This does not guarantee the URL is safe."
-                ),
-                "threats": []
-            })
-
-        if response.status_code in (400, 401, 403):
+        if response.status_code != 200:
             app.logger.error(
-                "Safe Browsing API configuration error: %s",
+                "Safe Browsing API returned HTTP %s",
                 response.status_code
             )
             return jsonify({
                 "error": (
-                    "Safe Browsing API rejected the request. "
+                    "Safe Browsing API request failed. "
                     "Check the API key, API enablement, and restrictions."
                 )
             }), 502
 
+        result = response.json()
+        matches = result.get("matches", [])
+
+        if matches:
+            return jsonify({
+                "url": url,
+                "status": "unsafe",
+                "message": "A potential threat was detected.",
+                "threats": [
+                    {
+                        "type": item.get("threatType", "UNKNOWN"),
+                        "platform": item.get(
+                            "platformType", "UNKNOWN"
+                        )
+                    }
+                    for item in matches
+                ]
+            })
+
         return jsonify({
-            "error": "Safe Browsing service returned an error."
-        }), 502
+            "url": url,
+            "status": "no_known_threat_found",
+            "message": (
+                "No known threat was found in the Safe Browsing "
+                "check. This does not guarantee the URL is safe."
+            ),
+            "threats": []
+        })
 
     except requests.Timeout:
         return jsonify({
