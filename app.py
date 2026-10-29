@@ -191,7 +191,8 @@ def scan_url():
                 )
             }), 502
 
-        result = response.json()
+        result = response.json( "risk_analysis": risk_analysis,)
+        risk_analysis = analyze_url_risk(url)
         matches = result.get("matches", [])
 
         if matches:
@@ -217,7 +218,7 @@ def scan_url():
                 "No known threat was found in the Safe Browsing "
                 "check. This does not guarantee the URL is safe."
             ),
-            "threats": []
+            "threats": [ "risk_analysis": risk_analysis,]
         })
 
     except requests.Timeout:
