@@ -1,20 +1,23 @@
 import os
 import ipaddress
 import requests
+
 from urllib.parse import urlparse
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
+
 CORS(
     app,
     resources={
-        r"/*": {
+        r"/scan": {
             "origins": [
-                "http://localhost:8765"
+                "https://ndark9615bot.github.io"
             ]
         }
-    },
+    }
+),
     methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"]
 )
