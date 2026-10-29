@@ -193,6 +193,7 @@ def scan_url():
 
         result = response.json( "risk_analysis": risk_analysis,)
         risk_analysis = analyze_url_risk(url)
+        result = response.json()
         matches = result.get("matches", [])
 
         if matches:
