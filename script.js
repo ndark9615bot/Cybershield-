@@ -131,32 +131,26 @@ async function scanURLWithAPI(value) {
             throw new Error(data.error || "The URL scan failed.");
         }
 
-        const isUnsafe = data.status === "unsafe";
-
         // Read risk analysis supplied by the Flask backend.
-        const analysis = data.risk_analysis || {};
-        const warnings = Array.isArray(analysis.warnings)
-            ? analysis.warnings
-            : [];
+const warnings = Array.isArray(data.warnings)
+    ? data.warnings
+    : [];
 
-        const riskScore = Number.isFinite(
-            Number(analysis.risk_score)
-        )
-            ? Number(analysis.risk_score)
-            : 0;
+const rawScore = Number(data.risk_score);
 
-        // Use the heuristic risk score, but never label a known
-        // Safe Browsing threat as low risk.
-        let riskLevel = ["low", "medium", "high"].includes(
-            String(analysis.risk_level).toLowerCase()
-        )
-            ? String(analysis.risk_level).toLowerCase()
-            : "low";
+const riskScore = Number.isFinite(rawScore)
+    ? Math.max(0, Math.min(100, rawScore))
+    : 0;
 
-        if (isUnsafe) {
-            riskLevel = "high";
-        }
+const rawLevel = String(data.risk_level || "").toLowerCase();
 
+let riskLevel = ["low", "medium", "high"].includes(rawLevel)
+    ? rawLevel
+    : "low";
+
+if (isUnsafe) {
+    riskLevel = "high";
+}
         // Build the result display.
         result.replaceChildren();
 
