@@ -67,7 +67,63 @@ def validate_url(value):
 
     except (ValueError, TypeError):
         return None
+def analyze_url_risk(url):
+    """Identify common warning signs in a URL."""
+    parsed = urlparse(url)
+    hostname = parsed.hostname or ""
+    warnings = []
+    score = 0
 
+    # 1. Flag unusually long URLs.
+    if len(url) > 100:
+        warnings.append("Unusually long URL")
+        score += 1
+
+    # 2. Flag IP addresses used as the hostname.
+    try:
+        ipaddress.ip_address(hostname)
+        warnings.append("URL uses an IP address instead of a domain")
+        score += 2
+    except ValueError:
+        pass
+
+    # 3. Check for suspicious URL terms.
+    suspicious_words = [
+        "verify", "signin", "login", "account",
+        "password", "confirm", "secure"
+    ]
+
+    found_words = [
+        word for word in suspicious_words
+        if word in url.lower()
+    ]
+
+    if len(found_words) >= 2:
+        warnings.append("Multiple security-related keywords in URL")
+        score += 1
+
+    # 4. Flag insecure HTTP.
+    if parsed.scheme == "http":
+        warnings.append("URL does not use HTTPS")
+        score += 1
+
+    # 5. Flag unusually many subdomains.
+    if len(hostname.split(".")) >= 5:
+        warnings.append("Unusually many domain segments")
+        score += 1
+
+    if score >= 3:
+        level = "high"
+    elif score >= 1:
+        level = "medium"
+    else:
+        level = "low"
+
+    return {
+        "risk_level": level,
+        "risk_score": score,
+        "warnings": warnings
+    }
 
 @app.route("/scan", methods=["POST", "OPTIONS"])
 def scan_url():
