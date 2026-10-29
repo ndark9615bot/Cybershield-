@@ -1,0 +1,149 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+    <meta name="description" content="CyberShield helps you check URLs for known threats and assess password strength.">
+    <title>CyberShield | Security Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head><body>
+    <header class="site-header">
+        <div class="brand">
+            <span class="brand-icon">🛡️</span>
+            <div>
+                <h1>CyberShield</h1>
+                <p>Personal Cybersecurity Toolkit</p>
+            </div>
+        </div>
+        <span class="status-badge">● Security Tools</span>
+    </header><main class="container">
+    <section class="intro">
+        <p class="eyebrow">YOUR DIGITAL SAFETY COMPANION</p>
+        <h2>Stay one step ahead of online threats.</h2>
+        <p>Check website URLs for known threats, review basic URL warning signs, and assess the strength of a test password.</p>
+    </section>
+
+    <section class="dashboard section-card" aria-labelledby="dashboardTitle">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">OVERVIEW</p>
+                <h2 id="dashboardTitle">Security Dashboard</h2>
+            </div>
+            <span class="section-icon">📊</span>
+        </div>
+
+        <div class="stats-grid">
+            <article class="stat-card">
+                <span>Total Scans</span>
+                <strong id="totalScans">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>High Risk</span>
+                <strong id="highScans">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>Medium Risk</span>
+                <strong id="mediumScans">0</strong>
+            </article>
+            <article class="stat-card">
+                <span>Low Risk</span>
+                <strong id="lowScans">0</strong>
+            </article>
+        </div>
+
+        <p id="dashboardMessage" class="muted">
+            Scan a URL to start building your dashboard.
+        </p>
+    </section>
+
+    <section class="section-card" aria-labelledby="scannerTitle">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">LINK CHECKER</p>
+                <h2 id="scannerTitle">🔎 URL Security Scanner</h2>
+            </div>
+        </div>
+
+        <p>Check a website URL against Google Safe Browsing's known-threat database.</p>
+
+        <form id="urlForm">
+            <label for="urlInput">Enter a URL</label>
+            <input
+                type="url"
+                id="urlInput"
+                name="url"
+                placeholder="https://example.com"
+                autocomplete="url"
+                inputmode="url"
+                required
+            >
+            <button type="submit" id="scanButton">Scan URL</button>
+        </form>
+
+        <div id="scanResult" class="result-area" aria-live="polite"></div>
+
+        <p class="notice">
+            ⚠️ A result showing no known threat does not guarantee a website is safe.
+        </p>
+    </section>
+
+    <section class="section-card" aria-labelledby="passwordTitle">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">PASSWORD HYGIENE</p>
+                <h2 id="passwordTitle">🔐 Password Strength</h2>
+            </div>
+        </div>
+
+        <p>Evaluate a test password locally on your device.</p>
+
+        <form id="passwordForm">
+            <label for="passwordInput">Enter a test password</label>
+            <input
+                type="password"
+                id="passwordInput"
+                name="password"
+                placeholder="Enter a test password"
+                autocomplete="off"
+                required
+            >
+            <button type="submit">Check Password</button>
+        </form>
+
+        <div id="passwordResult" class="result-area" aria-live="polite"></div>
+
+        <p class="notice">
+            Never enter your actual account password. This checker uses basic rules and is only an estimate.
+        </p>
+    </section>
+
+    <section class="section-card" aria-labelledby="historyTitle">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">YOUR ACTIVITY</p>
+                <h2 id="historyTitle">🕘 Scan History</h2>
+            </div>
+            <button type="button" id="clearHistory" class="button-secondary">
+                Clear History
+            </button>
+        </div>
+
+        <p class="muted">Your recent URL scans are stored in this browser on this device.</p>
+        <div id="historyList" class="history-list" aria-live="polite">
+            No scans recorded yet.
+        </div>
+    </section>
+
+    <section class="disclaimer">
+        <h2>Responsible Use</h2>
+        <p>CyberShield is an educational security tool. It does not guarantee that a website is safe, and it is not a replacement for professional security analysis.</p>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <p>🛡️ CyberShield · Built for cybersecurity learning</p>
+</footer>
+
+</body>
+</html>
