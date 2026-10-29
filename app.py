@@ -5,7 +5,15 @@ from urllib.parse import urlparse
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+FRONTEND_ORIGIN = "https://ndark9615bot.github.io"
 
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers["Access-Control-Allow-Origin"] = FRONTEND_ORIGIN
+    response.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
 GOOGLE_API_KEY = os.environ.get(
     "GOOGLE_SAFE_BROWSING_API_KEY", ""
 )
